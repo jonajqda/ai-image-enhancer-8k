@@ -1,0 +1,262 @@
+<html><head><base href="https://ai-image-enhancer-8k.tech/"><title>AI Image Enhancer 8K</title>
+<style>
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  color: #333;
+}
+.container {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  padding: 2rem;
+  max-width: 900px;
+  width: 95%;
+}
+h1 {
+  color: #2c3e50;
+  text-align: center;
+  font-size: 2.8rem;
+  margin-bottom: 1.5rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+.upload-area {
+  border: 3px dashed #3498db;
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  background-color: rgba(255,255,255,0.7);
+}
+.upload-area:hover {
+  background-color: rgba(236,240,241,0.8);
+  transform: scale(1.02);
+}
+.upload-icon {
+  font-size: 4rem;
+  color: #3498db;
+  margin-bottom: 1rem;
+}
+#fileInput {
+  display: none;
+}
+.btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.btn:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+}
+#enhanceBtn, #downloadBtn {
+  display: none;
+  margin-top: 1.5rem;
+}
+#previewArea {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+.preview-box {
+  flex: 1;
+  min-width: 300px;
+  max-width: 45%;
+  text-align: center;
+  margin: 1rem;
+}
+.preview-box img {
+  max-width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+}
+.preview-box img:hover {
+  transform: scale(1.05);
+}
+.preview-title {
+  font-weight: bold;
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  color: #2c3e50;
+}
+#loadingSpinner {
+  display: none;
+  text-align: center;
+  margin-top: 2rem;
+}
+.spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.quality-info {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  color: #34495e;
+}
+.ai-badge {
+  background-color: #9b59b6;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>AI Image Enhancer 8K</h1>
+  <div class="upload-area" id="dropArea">
+    <div class="upload-icon">🖼️</div>
+    <p>Arrastra y suelta tu imagen aquí o</p>
+    <input type="file" id="fileInput" accept="image/*">
+    <button class="btn" onclick="document.getElementById('fileInput').click()">Selecciona un archivo</button>
+  </div>
+  <div id="previewArea" style="display:none;">
+    <div class="preview-box">
+      <img id="originalPreview">
+      <p class="preview-title">Original</p>
+    </div>
+    <div class="preview-box">
+      <img id="enhancedPreview">
+      <p class="preview-title">Mejorada 8K <span class="ai-badge">AI Enhanced</span></p>
+    </div>
+  </div>
+  <button id="enhanceBtn" class="btn">Mejorar a 8K</button>
+  <button id="downloadBtn" class="btn">Descargar Imagen 8K</button>
+  <div id="loadingSpinner">
+    <div class="spinner"></div>
+    <p>Aplicando mejora 8K con IA...</p>
+  </div>
+  <div class="quality-info">
+    <p>Resolución mejorada: <strong>7680 x 4320 píxeles</strong></p>
+    <p>Tecnología: <strong>Upscaling por IA con SuperResolution</strong></p>
+  </div>
+</div>
+
+<script>
+const dropArea = document.getElementById('dropArea');
+const fileInput = document.getElementById('fileInput');
+const enhanceBtn = document.getElementById('enhanceBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const originalPreview = document.getElementById('originalPreview');
+const enhancedPreview = document.getElementById('enhancedPreview');
+const previewArea = document.getElementById('previewArea');
+const loadingSpinner = document.getElementById('loadingSpinner');
+
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+  dropArea.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+  e.preventDefault();
+  e.stopPropagation();
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+  dropArea.addEventListener(eventName, highlight, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+  dropArea.addEventListener(eventName, unhighlight, false);
+});
+
+function highlight() {
+  dropArea.classList.add('highlight');
+}
+
+function unhighlight() {
+  dropArea.classList.remove('highlight');
+}
+
+dropArea.addEventListener('drop', handleDrop, false);
+fileInput.addEventListener('change', handleFiles);
+
+function handleDrop(e) {
+  const dt = e.dataTransfer;
+  const files = dt.files;
+  handleFiles(files);
+}
+
+function handleFiles(files) {
+  if (files instanceof FileList) {
+    ([...files]).forEach(previewFile);
+  } else if (files.target) {
+    ([...files.target.files]).forEach(previewFile);
+  }
+}
+
+function previewFile(file) {
+  let reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onloadend = function() {
+    originalPreview.src = reader.result;
+    previewArea.style.display = 'flex';
+    enhanceBtn.style.display = 'inline-block';
+  }
+}
+
+enhanceBtn.addEventListener('click', enhanceImage);
+
+function enhanceImage() {
+  loadingSpinner.style.display = 'block';
+  enhanceBtn.disabled = true;
+  
+  // Simulamos el proceso de mejora con IA
+  setTimeout(() => {
+    // En un escenario real, aquí se llamaría a una API de IA para mejorar la imagen a 8K
+    enhancedPreview.src = originalPreview.src; // Por ahora, solo copiamos la original
+    loadingSpinner.style.display = 'none';
+    enhanceBtn.disabled = false;
+    downloadBtn.style.display = 'inline-block';
+    
+    // Añadimos un efecto de "mejora" visual
+    enhancedPreview.style.filter = 'contrast(110%) brightness(105%) saturate(110%)';
+  }, 5000);
+}
+
+downloadBtn.addEventListener('click', downloadEnhancedImage);
+
+function downloadEnhancedImage() {
+  const link = document.createElement('a');
+  link.download = 'enhanced_8k_image.png';
+  link.href = enhancedPreview.src;
+  link.click();
+}
+
+// Añadimos animación sutil a las imágenes
+document.querySelectorAll('.preview-box img').forEach(img => {
+  img.addEventListener('mouseover', function() {
+    this.style.transform = 'scale(1.05)';
+  });
+  img.addEventListener('mouseout', function() {
+    this.style.transform = 'scale(1)';
+  });
+});
+</script>
+</body></html>
